@@ -120,6 +120,12 @@ final class RealBufferedSink implements BufferedSink {
     return emitCompleteSegments();
   }
 
+  @Override public BufferedSink writeIntString(int i) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    buffer.writeIntString(i);
+    return emitCompleteSegments();
+  }
+
   @Override public BufferedSink writeLong(long v) throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.writeLong(v);
@@ -129,6 +135,12 @@ final class RealBufferedSink implements BufferedSink {
   @Override public BufferedSink writeLongLe(long v) throws IOException {
     if (closed) throw new IllegalStateException("closed");
     buffer.writeLongLe(v);
+    return emitCompleteSegments();
+  }
+
+  @Override public BufferedSink writeLongString(long v) throws IOException {
+    if (closed) throw new IllegalStateException("closed");
+    buffer.writeLongString(v);
     return emitCompleteSegments();
   }
 

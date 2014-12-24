@@ -712,6 +712,52 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
     return writeInt(Util.reverseBytesInt(i));
   }
 
+  @Override public BufferedSink writeIntString(int i) throws IOException {
+    if (i == 0) {
+      // Fast pass for zero and required since normal code can't handle 0.
+      return writeByte('0');
+    }
+
+    boolean negative = false;
+    if (i < 0) {
+      i = -i;
+      if (i < 0) { // Only true for Integer.MIN_VALUE.
+        return writeUtf8("-2147483648");
+      }
+      negative = true;
+    }
+
+    int width = i < 10 ? 1
+              : i < 100 ? 2
+              : i < 1000 ? 3
+              : i < 10000 ? 4
+              : i < 100000 ? 5
+              : i < 1000000 ? 6
+              : i < 10000000 ? 7
+              : i < 100000000 ? 8
+              : i < 1000000000 ? 9
+              : 10;
+    if (negative) {
+      ++width;
+    }
+
+    Segment tail = writableSegment(width);
+    byte[] data = tail.data;
+    int pos = tail.limit + width; // We write backwards from right to left.
+    while (i != 0) {
+      int digit = i % 10;
+      data[--pos] = (byte) ('0' + digit);
+      i /= 10;
+    }
+    if (negative) {
+      data[--pos] = '-';
+    }
+
+    tail.limit += width;
+    size += width;
+    return this;
+  }
+
   @Override public Buffer writeLong(long v) {
     Segment tail = writableSegment(8);
     byte[] data = tail.data;
@@ -731,6 +777,53 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable {
 
   @Override public Buffer writeLongLe(long v) {
     return writeLong(reverseBytesLong(v));
+  }
+
+  @Override public BufferedSink writeLongString(long v) throws IOException {
+    // If we are in integer range, just delegate to that implementation.
+    int i = (int) v;
+    if (i == v) {
+      return writeIntString(i);
+    }
+
+    boolean negative = false;
+    if (v < 0) {
+      v = -v;
+      if (v < 0) { // Only true for Long.MIN_VALUE.
+        return writeUtf8("-9223372036854775808");
+      }
+      negative = true;
+    }
+
+    int width = v < 10000000000L ? 10
+              : v < 100000000000L ? 11
+              : v < 1000000000000L ? 12
+              : v < 10000000000000L ? 13
+              : v < 100000000000000L ? 14
+              : v < 1000000000000000L ? 15
+              : v < 10000000000000000L ? 16
+              : v < 100000000000000000L ? 17
+              : v < 1000000000000000000L ? 18
+              : 19;
+    if (negative) {
+      ++width;
+    }
+
+    Segment tail = writableSegment(width);
+    byte[] data = tail.data;
+    int pos = tail.limit + width; // We write backwards from right to left.
+    while (v != 0) {
+      long digit = v % 10;
+      data[--pos] = (byte) ('0' + digit);
+      v /= 10;
+    }
+    if (negative) {
+      data[--pos] = '-';
+    }
+
+    tail.limit += width;
+    size += width;
+    return this;
   }
 
   /**

@@ -177,4 +177,43 @@ public class BufferedSinkTest {
     sink.close();
     assertEquals('a', data.readByte());
   }
+
+  @Test public void intString() throws IOException {
+    assertIntToString(Integer.MIN_VALUE);
+    assertIntToString(Integer.MIN_VALUE + 1);
+    assertIntToString(Short.MIN_VALUE); // Random in-between value.
+    assertIntToString(-1);
+    assertIntToString(0);
+    assertIntToString(1);
+    assertIntToString(Short.MAX_VALUE); // Random in-between value.
+    assertIntToString(Integer.MAX_VALUE);
+    assertIntToString(Integer.MAX_VALUE - 1);
+  }
+
+  private void assertIntToString(int value) throws IOException {
+    sink.writeIntString(value).flush();
+    String expected = Integer.toString(value);
+    String actual = data.readUtf8();
+    assertEquals(actual, actual, expected);
+  }
+
+  @Test public void longString() throws IOException {
+    assertLongToString(Long.MIN_VALUE);
+    assertLongToString(Long.MIN_VALUE + 1);
+    assertLongToString(Integer.MIN_VALUE - 1L);
+    assertLongToString(Integer.MIN_VALUE);
+    assertLongToString(-1);
+    assertLongToString(0);
+    assertLongToString(1);
+    assertLongToString(Integer.MAX_VALUE + 1L);
+    assertLongToString(Long.MAX_VALUE);
+    assertLongToString(Long.MAX_VALUE - 1);
+  }
+
+  private void assertLongToString(long value) throws IOException {
+    sink.writeLongString(value).flush();
+    String expected = Long.toString(value);
+    String actual = data.readUtf8();
+    assertEquals(actual, actual, expected);
+  }
 }

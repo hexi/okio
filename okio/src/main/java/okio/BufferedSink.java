@@ -71,11 +71,17 @@ public interface BufferedSink extends Sink {
   /** Writes a little-endian int to this sink using four bytes. */
   BufferedSink writeIntLe(int i) throws IOException;
 
+  /** Writes an int to this sink as a series of characters (i.e., as a string). */
+  BufferedSink writeIntString(int i) throws IOException;
+
   /** Writes a big-endian long to this sink using eight bytes. */
   BufferedSink writeLong(long v) throws IOException;
 
   /** Writes a little-endian long to this sink using eight bytes. */
   BufferedSink writeLongLe(long v) throws IOException;
+
+  /** Writes a long to this sink as a series of characters (i.e., as a string). */
+  BufferedSink writeLongString(long v) throws IOException;
 
   /**
    * Writes complete segments to the underlying sink, if one exists. Like {@link #flush}, but
